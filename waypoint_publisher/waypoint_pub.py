@@ -25,8 +25,6 @@ class Waypoints(Node):
         timer_period=0.25
         self.timer = self.create_timer(timer_period, self.waypoint_callback) 
 
-        self.i=0
-        self.j=0
         self.waypoint_num=0
         self.temp_waypoint_num=-1
 
@@ -50,6 +48,9 @@ class Waypoints(Node):
         self.utm_waypoints=None
         self.temp_coordinates=None
 
+        self.initial_base_link_pose_x=0.0
+        self.initial_base_link_pose_y=0.0
+
         self.x=0.0
         self.y=0.0
 
@@ -60,10 +61,10 @@ class Waypoints(Node):
         self.gnss=NavSatFix()  
         self.gnss=gnss
       
-        latitude=gnss.latitude
-        longitude=gnss.longitude
+        self.latitude=gnss.latitude
+        self.longitude=gnss.longitude
 
-        self.initial_utm=utm.from_latlon(latitude,longitude)
+        self.initial_utm=utm.from_latlon(self.latitude,self.longitude)
 
     def imu_callback(self,imu):
         orientation=imu.orientation
@@ -75,15 +76,14 @@ class Waypoints(Node):
         siny_cosp = 2 * (w * z + x * y)
         cosy_cosp = 1 - 2 * (y * y + z * z)
         self.initial_yaw=math.atan2(siny_cosp, cosy_cosp)
-        self.i=1
-
 
     def gps_waypoints(self):
         # file = open("coordinates.csv", "r")
         # self.gps_coordinates_string = list(csv.reader(file))
         # file.close()
         # self.gps_coordinates=[[float(coordinate) for coordinate in list] for list in self.gps_coordinates_string]
-        self.gps_coordinates=[[12.968842,79.155492]]
+        # self.gps_coordinates=[[12.968623,79.155336],[12.968814,79.155342],[12.968935,79.155344],[12.969050,79.155341]]
+        self.gps_coordinates=[[12.9688076, 79.1555218],[12.9687667, 79.1554823],[12.9687546, 79.1554508],[12.9687507, 79.1553921]]
         return self.gps_coordinates
 
 
@@ -113,10 +113,7 @@ class Waypoints(Node):
        
         elif self.initial_utm!=None:
             waypoints=self.waypoints()
-
-            
-            if ((self.goal_pose_x-0.3)<self.x<(self.goal_pose_x+0.3)) and ((self.goal_pose_y-0.3)<self.y<(self.goal_pose_y+0.3)):
-                self.waypoint_num+=1
+            gps_waypoints=self.gps_waypoints()
             
             if self.waypoint_num>=len(self.gps_coordinates):
                 self.waypoint_num=0
@@ -130,8 +127,14 @@ class Waypoints(Node):
                 self.waypoint_publisher.publish(goal_pose)
                 self.temp_waypoint_num=self.waypoint_num
 
+            if abs(round(self.latitude,5)-round(gps_waypoints[self.waypoint_num][0]))<=0.00001 and abs(round(self.longitude ,5)-round(gps_waypoints[self.waypoint_num][1]))<=0.00001:
+                self.waypoint_num+=1
+
+
+
             print("yaw=",self.initial_yaw)
             print("waypoints=",waypoints)
+            print([abs(self.goal_pose_x-(self.x-self.initial_base_link_pose_x)),abs(self.goal_pose_y-(self.y-self.initial_base_link_pose_y))])
             
             
 
@@ -143,7 +146,7 @@ def main(args=None):
     waypoint_publisher=Waypoints()
     rclpy.spin(waypoint_publisher)
 
-    gps_odom_publisher.destroy_node()
+    waypoint_publisher.destroy_node()
     rclpy.shutdown()
 
 if __name__=='__main__':
