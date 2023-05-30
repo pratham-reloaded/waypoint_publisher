@@ -21,7 +21,6 @@ setup(
     entry_points={
         'console_scripts': [
             'waypoint_publisher = waypoint_publisher.waypoint_pub:main'
-            'gps_recorder = gps_recorder.gps_recorder:main'
         ],
     },
 )
