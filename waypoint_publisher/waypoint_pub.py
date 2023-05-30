@@ -49,7 +49,7 @@ class Waypoints(Node):
         
         self.utm=None
         self.current_utm=None
-        self.gps_coordinates=None
+        self.gps_coordinates=[[0.0,0.0]]
         self.gps_coordinates_string=None
         self.utm_waypoints=None
         self.temp_coordinates=None
@@ -95,7 +95,7 @@ class Waypoints(Node):
         # file.close()
         # self.gps_coordinates=[[float(coordinate) for coordinate in list] for list in self.gps_coordinates_string]
         # self.gps_coordinates=[[12.968623,79.155336],[12.968814,79.155342],[12.968935,79.155344],[12.969050,79.155341]]
-        gps_coordinates=[[12.9688076, 79.1555218],[12.9687667, 79.1554823],[12.9687546, 79.1554508],[12.9687507, 79.1553921]]
+        gps_coordinates=[[12.9701399, 79.1553877],[12.9701187, 79.1553783]]
         return gps_coordinates
 
 
@@ -114,58 +114,59 @@ class Waypoints(Node):
         self.y=odom.pose.pose.position.y     
 
     def waypoint_callback(self):
+        try:
+            goal_pose=PoseStamped()
+            t = self.tf_buffer.lookup_transform( 'base_link','odom',rclpy.time.Time())
+            print(self.wait_for_fix)
+            if self.wait_for_fix<10:
+                self.wait_for_fix+=1            
+            elif self.current_utm!=None:
+                waypoints=self.waypoints()
+                
+                if self.waypoint_num>=len(self.gps_coordinates) and self.gps_coordinates[0][0]!=0.0:
+                    self.waypoint_num=0
 
-        goal_pose=PoseStamped()
-        t = self.tf_buffer.lookup_transform( 'base_link','odom',rclpy.time.Time())
-        
+                if self.waypoint_num!=self.temp_waypoint_num:
+                    self.goal_pose_x=waypoints[self.waypoint_num][0]
+                    self.goal_pose_y=waypoints[self.waypoint_num][1]
 
-        print(self.wait_for_fix)
-        if self.wait_for_fix<10:
-            self.wait_for_fix+=1    
+                    x=t.transform.translation.x
+                    y=t.transform.translation.y
+                    q_x=t.transform.rotation.x
+                    q_y=t.transform.rotation.y
+                    q_z=t.transform.rotation.z
+                    q_w=t.transform.rotation.w
 
-       
-        elif self.current_utm!=None:
-            waypoints=self.waypoints()
-            
-            if self.waypoint_num>=len(self.gps_coordinates):
-                self.waypoint_num=0
+                    siny_cosp = 2 * (q_w * q_z +q_x * q_y)
+                    cosy_cosp = 1 - 2 * (q_y * q_y + q_z * q_z)
+                    yaw=math.atan2(siny_cosp, cosy_cosp)
 
-            if self.waypoint_num!=self.temp_waypoint_num:
-                self.goal_pose_x=waypoints[self.waypoint_num][0]
-                self.goal_pose_y=waypoints[self.waypoint_num][1]
+                    x_temp=self.goal_pose_x*math.cos(yaw)-self.goal_pose_y*math.sin(yaw)
+                    y_temp=self.goal_pose_x*math.sin(yaw)+self.goal_pose_y*math.cos(yaw)
 
-                x=t.transform.translation.x
-                y=t.transform.translation.y
-                q_x=t.transform.rotation.x
-                q_y=t.transform.rotation.y
-                q_z=t.transform.rotation.z
-                q_w=t.transform.rotation.w
+                    self.goal_pose_x_odom=x_temp-x
+                    self.goal_pose_x_odom=y_temp-y
 
-                siny_cosp = 2 * (q_w * q_z +q_x * q_y)
-                cosy_cosp = 1 - 2 * (q_y * q_y + q_z * q_z)
-                yaw=math.atan2(siny_cosp, cosy_cosp)
+                    goal_pose.pose.position.x=self.goal_pose_x
+                    print(self.goal_pose_x)
+                    print(self.goal_pose_y)
+                    goal_pose.pose.position.y=self.goal_pose_y
+                    goal_pose.header.frame_id="base_link"
+                    self.waypoint_publisher.publish(goal_pose)
+                    self.temp_waypoint_num=self.waypoint_num
 
-                x_temp=self.goal_pose_x*math.cos(yaw)-self.goal_pose_y*math.sin(yaw)
-                y_temp=self.goal_pose_x*math.sin(yaw)+self.goal_pose_y*math.cos(yaw)
-
-                self.goal_pose_x_odom=x_temp-x
-                self.goal_pose_x_odom=y_temp-y
-
-                goal_pose.pose.position.x=self.goal_pose_x
-                goal_pose.pose.position.y=self.goal_pose_y
-                goal_pose.header.frame_id="base_link"
-                self.waypoint_publisher.publish(goal_pose)
-                self.temp_waypoint_num=self.waypoint_num
-
-            if abs(self.x-self.goal_pose_x_odom)<0.4 and abs(self.y-self.goal_pose_y_odom)<0.4:
-                self.waypoint_num+=1
+                if abs(self.x-self.goal_pose_x_odom)<0.4 and abs(self.y-self.goal_pose_y_odom)<0.4:
+                    self.waypoint_num+=1
 
 
 
-            # print("yaw=",self.current_yaw)
-            # print("waypoints=",waypoints)
-            print(self.x-self.goal_pose_x_odom,',',self.y-self.goal_pose_y_odom)
-            
+                # print("yaw=",self.current_yaw)
+                # print("waypoints=",waypoints)
+                print(self.x-self.goal_pose_x_odom,',',self.y-self.goal_pose_y_odom)
+                print(self.waypoint_num)
+        except:
+            pass
+                
             
 
 
