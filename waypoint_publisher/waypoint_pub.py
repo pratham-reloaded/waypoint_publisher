@@ -48,7 +48,7 @@ class Waypoints(Node):
         self.current_utm=None
         self.gps_coordinates=[[0.0,0.0]]
         self.gps_coordinates_string=None
-        self.utm_waypoints=None
+        self.utm_waypoints=[[0.0,0.0]]
         self.temp_coordinates=None
 
         self.initial_base_link_pose_x=0.0
