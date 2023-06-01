@@ -148,7 +148,7 @@ class Waypoints(Node):
 
             # print("yaw=",self.current_yaw)
             # print("waypoints=",waypoints)
-            print("distance to goal=",abs(self.current_utm[0]-self.utm_waypoints[self.waypoint_num][0]),',', abs(self.current_utm[1]-self.utm_waypoints[self.waypoint_num][1]))
+            print("distance to goal=",abs(self.current_utm[0]-utm_waypoints[self.waypoint_num][0]),',', abs(self.current_utm[1]-utm_waypoints[self.waypoint_num][1]))
             print("waypoint number=",self.waypoint_num)
 
             
