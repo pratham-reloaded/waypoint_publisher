@@ -133,13 +133,9 @@ class Waypoints(Node):
                 self.goal_pose_x=waypoints[self.waypoint_num][0]
                 self.goal_pose_y=waypoints[self.waypoint_num][1]
 
-                siny_cosp = 2 * (q_w * q_z +q_x * q_y)
-                cosy_cosp = 1 - 2 * (q_y * q_y + q_z * q_z)
-                yaw=math.atan2(siny_cosp, cosy_cosp)
-
                 goal_pose.pose.position.x=self.goal_pose_x
                 goal_pose.pose.position.y=self.goal_pose_y
-                
+
                 print(self.goal_pose_x)
                 print(self.goal_pose_y)                
                 goal_pose.header.frame_id="base_link"
