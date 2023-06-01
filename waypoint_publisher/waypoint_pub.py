@@ -117,7 +117,7 @@ class Waypoints(Node):
 
     def waypoint_callback(self):
         goal_pose=PoseStamped()
-        t = self.tf_buffer.lookup_transform( 'base_link','odom',rclpy.time.Time())
+
         print(self.wait_for_fix)
         if self.wait_for_fix<10:
             self.wait_for_fix+=1  
