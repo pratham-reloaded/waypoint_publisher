@@ -120,7 +120,8 @@ class Waypoints(Node):
         t = self.tf_buffer.lookup_transform( 'base_link','odom',rclpy.time.Time())
         print(self.wait_for_fix)
         if self.wait_for_fix<10:
-            self.wait_for_fix+=1            
+            self.wait_for_fix+=1  
+
         elif self.current_utm!=None:
             waypoints=self.waypoints()
             utm_waypoints=self.utm_waypoints()
@@ -132,40 +133,28 @@ class Waypoints(Node):
                 self.goal_pose_x=waypoints[self.waypoint_num][0]
                 self.goal_pose_y=waypoints[self.waypoint_num][1]
 
-                x=t.transform.translation.x
-                y=t.transform.translation.y
-                q_x=t.transform.rotation.x
-                q_y=t.transform.rotation.y
-                q_z=t.transform.rotation.z
-                q_w=t.transform.rotation.w
-
                 siny_cosp = 2 * (q_w * q_z +q_x * q_y)
                 cosy_cosp = 1 - 2 * (q_y * q_y + q_z * q_z)
                 yaw=math.atan2(siny_cosp, cosy_cosp)
 
-                x_temp=self.goal_pose_x*math.cos(yaw)-self.goal_pose_y*math.sin(yaw)
-                y_temp=self.goal_pose_x*math.sin(yaw)+self.goal_pose_y*math.cos(yaw)
-
-                self.goal_pose_x_odom=x_temp-x
-                self.goal_pose_x_odom=y_temp-y
-
                 goal_pose.pose.position.x=self.goal_pose_x
-                print(self.goal_pose_x)
-                print(self.goal_pose_y)
                 goal_pose.pose.position.y=self.goal_pose_y
+                
+                print(self.goal_pose_x)
+                print(self.goal_pose_y)                
                 goal_pose.header.frame_id="base_link"
                 self.waypoint_publisher.publish(goal_pose)
                 self.temp_waypoint_num=self.waypoint_num
 
-            if abs(self.current_utm[0]-self.utm_waypoints[self.waypoint_num][0])<0.4 and abs(self.current_utm[1]-self.utm_waypoints[self.waypoint_num][1]):
+            if abs(self.current_utm[0]-self.utm_waypoints[self.waypoint_num][0])<0.7 and abs(self.current_utm[1]-self.utm_waypoints[self.waypoint_num][1])<0.7:
                 self.waypoint_num+=1
 
 
 
             # print("yaw=",self.current_yaw)
             # print("waypoints=",waypoints)
-            print(self.x-self.goal_pose_x_odom,',',self.y-self.goal_pose_y_odom)
-            print(self.waypoint_num)
+            print(abs(self.current_utm[0]-self.utm_waypoints[self.waypoint_num][0]),',', abs(self.current_utm[1]-self.utm_waypoints[self.waypoint_num][1]))
+            print("waypoint number=",self.waypoint_num)
 
             
 
