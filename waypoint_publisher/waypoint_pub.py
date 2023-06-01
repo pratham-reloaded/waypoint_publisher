@@ -91,7 +91,7 @@ class Waypoints(Node):
         # file.close()
         # self.gps_coordinates=[[float(coordinate) for coordinate in list] for list in self.gps_coordinates_string]
         # self.gps_coordinates=[[12.968623,79.155336],[12.968814,79.155342],[12.968935,79.155344],[12.969050,79.155341]]
-        gps_coordinates=[[12.9701399, 79.1553877],[12.9701187, 79.1553783]]
+        gps_coordinates=[[42.645953,-83.166758],[42.645928,-83.166876]]
         return gps_coordinates
 
     def utm_waypoints(self):
