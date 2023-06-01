@@ -141,7 +141,7 @@ class Waypoints(Node):
                 self.waypoint_publisher.publish(goal_pose)
                 self.temp_waypoint_num=self.waypoint_num
 
-            if abs(self.current_utm[0]-self.utm_waypoints[self.waypoint_num][0])<0.7 and abs(self.current_utm[1]-self.utm_waypoints[self.waypoint_num][1])<0.7:
+            if abs(self.current_utm[0]-utm_waypoints[self.waypoint_num][0])<0.7 and abs(self.current_utm[1]-utm_waypoints[self.waypoint_num][1])<0.7:
                 self.waypoint_num+=1
 
 
