@@ -8,7 +8,7 @@ from geometry_msgs.msg import Pose
 from geometry_msgs.msg import PoseStamped
 from geometry_msgs.msg import Quaternion
 from sensor_msgs.msg import Imu
-from geometry_msgs.msg import Vector3
+from geometry_msgs.msg import Vector3Stamped
 from std_msgs.msg import Bool
 from tf2_ros.buffer import Buffer
 from tf2_ros.transform_listener import TransformListener
@@ -20,7 +20,8 @@ import csv
 class Waypoints(Node):
     def __init__(self):
         super().__init__('waypoint_pub')
-        self.gnss_subscriber=self.create_subscription(NavSatFix,'/gnss',self.gnss_callback,10)
+        # self.gnss_subscriber=self.create_subscription(NavSatFix,'/gnss',self.gnss_callback,10)
+        self.gnss_subscriber=self.create_subscription(Vector3Stamped,'/filter/positionlla',self.gnss_callback,10)
         self.imu_subscriber=self.create_subscription(Imu,'/imu/data',self.imu_callback,10)
         self.odom_subscriber=self.create_subscription(Odometry,'/odometry/filtered',self.odom_callback,10)
 
@@ -62,13 +63,18 @@ class Waypoints(Node):
         # self.current_utm=utm.from_latlon(12.9695051, 79.1545428)
         
 
-    def gnss_callback(self,gnss):
-        self.gnss=NavSatFix()  
-        self.gnss=gnss
+    # def gnss_callback(self,gnss):
+    #     self.gnss=NavSatFix()  
+    #     self.gnss=gnss
       
-        self.latitude=gnss.latitude
-        self.longitude=gnss.longitude
+    #     self.latitude=gnss.latitude
+    #     self.longitude=gnss.longitude
 
+    #     self.current_utm=utm.from_latlon(self.latitude,self.longitude)
+
+    def gnss_callback(self,gnss):
+        self.latitude=gnss.vector.x
+        self.longitude=gnss.vector.y
         self.current_utm=utm.from_latlon(self.latitude,self.longitude)
 
     def imu_callback(self,imu):
@@ -91,7 +97,7 @@ class Waypoints(Node):
         # file.close()
         # self.gps_coordinates=[[float(coordinate) for coordinate in list] for list in self.gps_coordinates_string]
         # self.gps_coordinates=[[12.968623,79.155336],[12.968814,79.155342],[12.968935,79.155344],[12.969050,79.155341]]
-        gps_coordinates=[[42.645953,-83.166758],[42.645928,-83.166876]]
+        gps_coordinates=[[42.6457172,-83.1672194],[42.6455961,-83.1670192]]
         return gps_coordinates
 
     def utm_waypoints(self):
