@@ -85,7 +85,11 @@ class Waypoints(Node):
         y=orientation.y
         z=orientation.z
         siny_cosp = 2 * (w * z + x * y)
-        cosy_cosp = 1 - 2 * (y * y + z * z)
+        # cosy_cosp = 1 - 2 * (y * y + z * z)
+        # rewriting cosy_cosp based on this link https://stackoverflow.com/questions/5782658/extracting-yaw-from-a-quaternion
+        cosy_cosp = w*w + x*x - y*y - z*z
+        # can also do 
+        # cosy_cosp = -1 + 2 * (y * y + z * z)
         self.current_yaw=math.atan2(siny_cosp, cosy_cosp)
 
     # def goal_status_callback(self,status):
